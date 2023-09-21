@@ -1,0 +1,148 @@
+Beginning base code 
+
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Chess.com Rating by Game Type</title>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <script src="https://d3js.org/d3-zoom.v1.min.js"></script>
+  <style>
+    
+   
+    .legend-color {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      margin-right: 5px;
+      border: 1px solid #000; /* Add border */
+    }
+    /* Custom styles for the dropdown button */
+    #gameTypeSelect {
+      font-size: 16px;
+      padding: 10px;
+      border-radius: 5px;
+      margin: 10px;
+    }
+    #chartContainer {
+      position: absolute;
+      top: 60px;
+      bottom: 35px;
+      left: 10px;
+      right: 10px;
+    }
+    #legendContainer {
+      position: absolute;
+      bottom: 10px;
+      left: 60px;
+    }
+    
+  </style>
+</head>
+<body>
+  <div id="option">
+    <select id="gameTypeSelect">
+      <option value="bullet">Bullet</option>
+      <option value="rapid">Rapid</option>
+      <option value="blitz">Blitz</option>
+      <option value="daily">Daily</option>
+    </select>
+  </div>
+
+  <div id="chartContainer">
+    <svg id="chart"></svg>
+  </div>
+  
+  <div id="legendContainer">
+    <div id="legend"></div>
+  </div>
+
+  <script>
+     // Step 1: Load the data
+     d3.csv("raine_chess_data.csv").then(function(data) {
+    // Convert string columns to numeric values
+    data.forEach(function(d) {
+      d.userRating = +d.userRating - 140 ;
+      d.date = new Date(d.date);
+      d.opponentRating = +d.opponentRating;
+      d.wonBy = +d.wonBy;
+    });
+
+      var xScale, yScale;
+      var svg = d3.select("#chart")
+        .attr("width", "100%")
+        .attr("height", "100%");
+
+      function updateData() {
+        var selectedGameType = document.getElementById("gameTypeSelect").value;
+
+        svg.selectAll("image")
+          .data(data.filter(function(d) {
+            return d.timeClass === selectedGameType;
+          }))
+          .join(
+            enter => enter.append("image")
+              .attr("class", "dot")
+              .attr("xlink:href", function(d) {
+                return d.userColor === "black" ? "black_pawn.png" : "white_pawn.png";
+              })
+              .attr("x", function(d) { return xScale(new Date(d.date)) - 10; })
+              .attr("y", function(d) { return yScale(d.userRating) - 10; })
+              .attr("width", 20)
+              .attr("height", 20)
+              .style("opacity", 0.9)
+          );
+      }
+      function initializeChart() {
+        var filteredData = data.filter(function(d) {
+          return d.timeClass === "bullet";
+        });
+
+        xScale = d3.scaleTime()
+          .domain([new Date("2017-01-01"), new Date("2023-12-31")])
+          .range([0, window.innerWidth-100]);
+
+        yScale = d3.scaleLinear()
+          .domain([400, 2000])
+          .range([window.innerHeight - 180, 0]);
+
+
+        var legend = d3.select("#legend");
+
+        legend.selectAll("div")
+          .data(["White", "Black"])
+          .enter()
+          .append("div")
+          .attr("class", "legend")
+          .html(function(d) {
+            return '<div class="legend-color" style="background-color:' + d + '"></div>' + d;
+          });
+
+        var xAxis = d3.axisBottom(xScale);
+        var yAxis = d3.axisLeft(yScale);
+
+        svg.append("g")
+          .attr("transform", "translate(50, " + (window.innerHeight - 130) + ")")
+          .call(xAxis);
+
+        svg.append("g")
+          .attr("transform", "translate(50, 50)")
+          .call(yAxis);
+      }
+       
+      initializeChart();
+      updateData();
+
+      // Event listener for the dropdown selection
+      d3.select("#gameTypeSelect").on("change", function() {
+        updateData();
+      });
+
+    }).catch(function(error) {
+      console.log(error);
+    });
+  </script>
+</body>
+</html>
+

@@ -1,0 +1,63 @@
+import React, { useEffect, useState } from 'react';
+import Plot from 'react-plotly.js';
+import * as d3 from 'd3';
+
+const App = () => {
+  const [data, setData] = useState([]);
+
+  useEffect(() => {
+    // Load the data
+    d3.csv('raine_chess_data.csv').then((csvData) => {
+      // Filter data by timeClass
+      const filteredData = csvData.filter((d) => d.timeClass === 'rapid');
+
+      // Convert string values to appropriate data types
+      filteredData.forEach((d) => {
+        d.date = new Date(d.date);
+        d.userRating = +d.userRating;
+        // Add any other necessary data type conversions
+      });
+
+      setData(filteredData);
+    });
+  }, []);
+
+  const scatterTrace = {
+    x: data.map((d) => d.date),
+    y: data.map((d) => d.userRating),
+    mode: 'markers',
+    type: 'scatter',
+    marker: {
+      size: 10,
+      color: data.map((d) => d.userColor),
+      opacity: 0.7,
+    },
+    hovertemplate: `
+      User Rating: %{y}<br>
+      Won By: %{customdata[0]}<br>
+      Result: %{customdata[1]}<br>
+      Opening: %{customdata[2]}<extra></extra>
+    `,
+    customdata: data.map((d) => [d.wonBy, d.result, d.opening]),
+  };
+
+  const layout = {
+    title: 'Rapid chess.com rating over the years',
+    xaxis: {
+      title: 'Date',
+    },
+    yaxis: {
+      title: 'Chess ELO',
+    },
+    hovermode: 'closest',
+  };
+
+  return (
+    <div>
+      <h1>Rapid Chess.com Rating</h1>
+      <Plot data={[scatterTrace]} layout={layout} />
+    </div>
+  );
+};
+
+export default App;

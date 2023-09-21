@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>My JavaScript Code</title>
+</head>
+<body>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script>
+        d3.csv("raine_chess_data.csv").then(function(data) {
+        console.log(data);
+            });
+    </script>
+</body>
+</html>
+
+
+// Determines whether the columns are stored as strings or numerics 
+<!DOCTYPE html>
+<html>
+<head>
+    <title>My JavaScript Code</title>
+</head>
+<body>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script>
+        d3.csv("raine_chess_data.csv").then(function(data) {
+            // Get the first row of data to inspect the column types
+            var firstRow = data[0];
+
+            // Check the data types of specific columns
+            var userRatingType = typeof firstRow.userRating;
+            var dateType = typeof firstRow.date;
+            var opponentRatingType = typeof firstRow.opponentRating;
+
+            // Output the results
+            console.log("userRating type:", userRatingType);
+            console.log("date type:", dateType);
+            console.log("opponentRating type:", opponentRatingType);
+        });
+    </script>
+</body>
+</html>

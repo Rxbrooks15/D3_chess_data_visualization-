@@ -1,0 +1,168 @@
+Working dot plot of rapid chess 
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Rapid chess.com rating over the years</title>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <script src="rapid/interactive_feature.js"></script>
+  <style>
+    /* CSS styling for the plot */
+    body, html {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+    }
+    svg {
+      background-color: #a9c4e6;
+      display: block;
+      margin: 0;
+    }
+    .dot {
+      stroke: #fff;
+      opacity: 0.8;
+    }
+    .dot:hover {
+      opacity: 1; /* Increase opacity on hover */
+    }
+    .tooltip {
+      position: absolute;
+      padding: 10px;
+      background-color: rgba(255, 255, 255, 0.9);
+      pointer-events: none;
+      display: none;
+    }
+    .legend {
+      font-size: 12px;
+    }
+    .legend-color {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      margin-right: 5px;
+    }
+  </style>
+</head>
+<body>
+  <svg id="chart"></svg>
+  <div id="legend"></div>
+  <div id="tooltip" class="tooltip"></div>
+
+  <script>
+    d3.csv("raine_chess_data.csv").then(function(data) {
+      // Step 1: Filter data by timeClass
+      var filteredData = data.filter(function(d) {
+        return d.timeClass === "rapid";
+      });
+
+      // Step 2: Create scales for x and y axes
+      var xScale = d3.scaleTime()
+        .domain([new Date("2017-01-01"), new Date("2023-12-31")])
+        .range([50, window.innerWidth - 50]);
+
+      var yScale = d3.scaleLinear()
+        .domain([900, 1900])
+        .range([window.innerHeight - 50, 50]);
+
+      // Step 3: Create SVG container and add circles
+      var svg = d3.select("#chart")
+        .attr("width", "100%")
+        .attr("height", "100%");
+
+      svg.selectAll("circle")
+        .data(filteredData)
+        .enter()
+        .append("circle")
+        .attr("class", "dot")
+        .attr("cx", function(d) { return xScale(new Date(d.date)); })
+        .attr("cy", function(d) { return yScale(d.userRating); })
+        .attr("r", 10)
+        .style("fill", function(d) { return d.userColor; })
+        .style("opacity", 0.7)
+        .on("mouseover", function(d) { showTooltip(d); }) // Show tooltip on mouseover
+        .on("mouseout", hideTooltip); // Hide tooltip on mouseout
+
+      // Step 4: Add labels and title
+      svg.append("text")
+        .attr("x", window.innerWidth / 2)
+        .attr("y", 30)
+        .attr("text-anchor", "middle")
+        .style("font-size", "18px")
+        .text("Rapid chess.com rating over the years");
+
+      svg.append("text")
+        .attr("x", window.innerWidth / 2)
+        .attr("y", window.innerHeight - 20)
+        .attr("text-anchor", "middle")
+        .style("font-size", "12px")
+        .text("Date");
+
+      svg.append("text")
+        .attr("x", -200)
+        .attr("y", 12)
+        .attr("text-anchor", "middle")
+        .style("font-size", "12px")
+        .attr("transform", "rotate(-90)")
+        .text("Chess ELO");
+
+      // Step 5: Apply styles
+      var legend = d3.select("#legend");
+
+      legend.selectAll("div")
+        .data(["White", "Black"]) // Legend labels for userColor
+        .enter()
+        .append("div")
+        .attr("class", "legend")
+        .html(function(d) {
+          return '<div class="legend-color" style="background-color:' + d + '"></div>' + d;
+        });
+
+      // Step 6: Apply axis formatting
+      var xAxis = d3.axisBottom(xScale);
+      var yAxis = d3.axisLeft(yScale);
+
+      svg.append("g")
+        .attr("transform", "translate(0, " + (window.innerHeight - 50) + ")")
+        .call(xAxis);
+
+      svg.append("g")
+        .attr("transform", "translate(50, 0)")
+        .call(yAxis);
+
+      // Step 7: Tooltip functions
+      var tooltip = d3.select("#tooltip");
+
+      function showTooltip(d) {
+        d3.select(this)
+          .transition()
+          .duration('100')
+          .attr("r", 7);
+
+        tooltip.transition()
+          .duration(100)
+          .style("opacity", 1);
+
+        tooltip.html("$" + d3.format(".2f")(d.userRating))
+          .style("left", (d3.event.pageX + 10) + "px")
+          .style("top", (d3.event.pageY - 15) + "px");
+      }
+
+      function hideTooltip() {
+        d3.select(this)
+          .transition()
+          .duration('200')
+          .attr("r", 5);
+
+        tooltip.transition()
+          .duration('200')
+          .style("opacity", 0);
+      }
+    }).catch(function(error) {
+      console.log(error);
+    });
+  </script>
+</body>
+</html>

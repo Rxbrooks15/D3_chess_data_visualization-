@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Chess.com Rating by Game Type</title>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <script src="https://d3js.org/d3-zoom.v1.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/14.6.3/nouislider.min.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/14.6.3/nouislider.min.js"></script>
+  <style>
+    .legend-color {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      margin-right: 5px;
+      border: 1px solid #000;
+    }
+    /* Custom styles for the dropdown button */
+    #gameTypeSelect {
+      font-size: 16px;
+      padding: 10px;
+      border-radius: 5px;
+      margin: 10px;
+    }
+    #chartContainer {
+      position: absolute;
+      top: 60px;
+      bottom: 35px;
+      left: 10px;
+      right: 10px;
+    }
+    #legendContainer {
+      position: absolute;
+      bottom: 10px;
+      left: 60px;
+    }
+    #sliderContainer {
+      position: absolute;
+      bottom: 10px;
+      left: 10px;
+    }
+    /* Custom styles for the sliders */
+    #startRange,
+    #endRange {
+      width: 300px; /* Adjusted width */
+      margin: 0 10px;
+    }
+  </style>
+</head>
+<body>
+  <div id="option">
+    <select id="gameTypeSelect">
+      <option value="bullet">Bullet</option>
+      <option value="rapid">Rapid</option>
+      <option value="blitz">Blitz</option>
+      <option value="daily">Daily</option>
+    </select>
+  </div>
+
+  <div id="chartContainer">
+    <svg id="chart"></svg>
+  </div>
+  
+  <div id="legendContainer">
+    <div id="legend"></div>
+  </div>
+  
+  <div id="sliderContainer">
+    <label for="startRange">Start:</label>
+    <div id="startRange"></div>
+    <label for="endRange">End:</label>
+    <div id="endRange"></div>
+  </div>
+
+  <script>
+    // Step 1: Load the data
+    d3.csv("raine_chess_data.csv").then(function(data) {
+      // Convert string columns to numeric values
+      data.forEach(function(d) {
+        d.userRating = +d.userRating - 140 ;
+        d.date = new Date(d.date);
+        d.opponentRating = +d.opponentRating;
+        d.wonBy = +d.wonBy;
+      });
+
+      var xScale, yScale;
+      var svg = d3.select("#chart")
+        .attr("width", "100%")
+        .attr("height", "100%");
+
+      function updateData() {
+        var selectedGameType = document.getElementById("gameTypeSelect").value;
+
+        var dots = svg.selectAll(".dot")
+          .data(data.filter(function(d) {
+            return d.timeClass === selectedGameType;
+          }));
+
+        dots.enter()
+          .append("image")
+          .attr("class", "dot")
+          .merge(dots)
+          .transition()
+          .duration(500)
+          .attr("xlink:href", function(d) {
+            return d.userColor === "black" ? "black_pawn.png" : "white_pawn.png";
+          })
+          .attr("x", function(d) { return xScale(new Date(d.date)) - 10; })
+          .attr("y", function(d) { return yScale(d.userRating) - 10; })
+          .attr("width", 20)
+          .attr("height", 20)
+          .style("opacity", 0.85);
+          
+
+        dots.exit().remove();
+      }
+
+      function initializeChart() {
+        var filteredData = data.filter(function(d) {
+          return d.timeClass === "bullet";
+        });
+
+        xScale = d3.scaleTime()
+          .domain([new Date("2017-01-01"), new Date("2023-12-31")])
+          .range([0, window.innerWidth - 100]);
+
+        yScale = d3.scaleLinear()
+          .domain([400, 2000])
+          .range([window.innerHeight - 180, 0]);
+
+        var legend = d3.select("#legend");
+
+        legend.selectAll("div")
+          .data(["White", "Black"])
+          .enter()
+          .append("div")
+          .attr("class", "legend")
+          .html(function(d) {
+            return '<div class="legend-color" style="background-color:' + d + '"></div>' + d;
+          });
+
+        var xAxis = d3.axisBottom(xScale);
+        var yAxis = d3.axisLeft(yScale);
+
+        svg.append("g")
+          .attr("class", "x-axis") // Added class name
+          .attr("transform", "translate(50, " + (window.innerHeight - 130) + ")")
+          .call(xAxis);
+
+        svg.append("g")
+          .attr("transform", "translate(50, 50)")
+          .call(yAxis);
+      }
+
+      initializeChart();
+      updateData();
+
+      // Event listener for the dropdown selection
+      d3.select("#gameTypeSelect").on("change", function() {
+        updateData();
+      });
+
+
+      // Create the noUiSlider instances
+      var startRange = document.getElementById('startRange');
+      var endRange = document.getElementById('endRange');
+
+      noUiSlider.create(startRange, {
+        start: 2017,
+        connect: 'lower',
+        range: {
+          'min': 2017,
+          'max': 2023
+        },
+        step: 1
+      });
+
+      noUiSlider.create(endRange, {
+        start: 2023,
+        connect: 'lower',
+        range: {
+          'min': 2017,
+          'max': 2023
+        },
+        step: 1
+      });
+
+      // Event listener for the range sliders
+      startRange.noUiSlider.on('slide', function(values, handle) {
+        var startValue = values[handle];
+        var endValue = endRange.noUiSlider.get();
+        updateXDomain(startValue, endValue);
+      });
+
+      endRange.noUiSlider.on('slide', function(values, handle) {
+        var startValue = startRange.noUiSlider.get();
+        var endValue = values[handle];
+        updateXDomain(startValue, endValue);
+      });
+
+      function updateXDomain(startValue, endValue) {
+        var startDate = new Date(startValue + "-01-01");
+        var endDate = new Date(endValue + "-12-31");
+
+        xScale.domain([startDate, endDate]);
+
+        svg.select(".x-axis")
+          .transition()
+          .duration(500)
+          .call(d3.axisBottom(xScale));
+
+        updateData(); // Call updateData() to update the images based on the new x-axis domain
+      }
+    }).catch(function(error) {
+      console.log(error);
+    });
+  </script>
+</body>
+</html>
