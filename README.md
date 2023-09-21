@@ -1,6 +1,7 @@
 # D3_chess_data_visualization-
 Notes for story boarding and context
 Youtube link for demonstration
+(IMPORTANT)
 https://youtu.be/AqJKR_vPSD0
 
 Context:
