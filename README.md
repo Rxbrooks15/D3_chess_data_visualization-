@@ -1,9 +1,10 @@
 # D3_chess_data_visualization-
-Notes for story boarding and context
-Youtube link for demonstration
+
+Youtube link for demonstration below
 (IMPORTANT)
 https://youtu.be/AqJKR_vPSD0
 
+Notes for story boarding and context down (below)
 Context:
 In QSS17 I plotted data in Regard to the ELO of famous grandmasters. The animated plot highlighted the 
 progress of the players over the years. Now I was thinking of getting a better story by looking at MY
