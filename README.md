@@ -77,7 +77,7 @@ dropbox feature
 
 
 Slider:
-sliderpoitns represent years: leftmost is 2017 and rightmost is 2023
+sliderpoints represent years: leftmost is 2017 and rightmost is 2023
 slider points zoom in based on increasing the distance between the years 
 Note* The START slider length usually has to be less than the END slider length 
 having the start slider greater than the end shows the points backwards 
