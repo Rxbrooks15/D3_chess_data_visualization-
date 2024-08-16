@@ -22,6 +22,9 @@ in Bullet, Rapid, Blitz, and Daily chess... PS. Bullet includes games played und
 Blitz includes games of 3 minutes to 14 minutes, rapid games go for 15 minutes and longer an daily games go 
 over 24 hours to 7 days 
 
+![Screenshot (278)](https://github.com/user-attachments/assets/59d96661-2d81-493b-a5a5-dbbce4608d4f)
+
+
 Brainstorming:
 Dot plot seems likely 
 Maybe an animation of my common chess openings is possible*
