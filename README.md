@@ -15,6 +15,9 @@ Step2: Make dummuy plots in R
 Step3: Make interactive plot in R
 Step4: Work in D3 and try to add some interactive feature 
 
+![Screenshot (281)](https://github.com/user-attachments/assets/fe972e86-0be4-45a7-b054-5c2d0a402d88)
+
+
 For the recreation I can try to recreate the chess.com elo rating plot here https://www.chess.com/stats/live/rapid/rainebrookshire/0
 I can do this for the 3 time controls and have 3 or 4 plots
 My D3 plot will document my progress and performance in chess from 2017-2023 and will include my progress 
